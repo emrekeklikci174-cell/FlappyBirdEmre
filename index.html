@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Flappy Bird</title>
+  <style>
+    body { margin:0; overflow:hidden; }
+    canvas { display:block; margin:auto; }
+  </style>
+</head>
+<body>
+<canvas id="oyun" width="400" height="600"></canvas>
+
+<script>
+const canvas = document.getElementById("oyun");
+const ctx = canvas.getContext("2d");
+
+// Resimler
+let bg = new Image();
+bg.src = "assets/bg.png";
+
+let bird = new Image();
+bird.src = "assets/bird.png";
+
+let pipeTop = new Image();
+pipeTop.src = "assets/pipe.png";
+
+let pipeBottom = new Image();
+pipeBottom.src = "assets/pipe.png";
+
+let kus = { x: 50, y: 150, w: 34, h: 24, hiz: 0 };
+let yercekimi = 0.5;
+let ziplama = -8;
+let borular = [];
+let boruAralik = 150;
+let boruHizi = -2;
+let puan = 0;
+
+// Boru olutur
+function boruEkle() {
+  let orta = Math.floor(Math.random() * (canvas.height - 200)) + 100;
+  borular.push({ x: canvas.width, y: orta });
+}
+
+// Space ve dokunma kontrolü
+document.addEventListener("keydown", e => {
+  if (e.code === "Space") kus.hiz = ziplama;
+});
+document.addEventListener("touchstart", () => {
+  kus.hiz = ziplama;
+});
+
+function oyun() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Arka plan
+  ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
+
+  // Ku
+  kus.hiz += yercekimi;
+  kus.y += kus.hiz;
+  ctx.drawImage(bird, kus.x, kus.y, kus.w, kus.h);
+
+  // Borular
+  if (borular.length === 0 || borular[borular.length - 1].x < canvas.width - 200) {
+    boruEkle();
+  }
+
+  for (let b of borular) {
+    b.x += boruHizi;
+
+    // Üst ve alt borular
+    ctx.drawImage(pipeTop, b.x, 0, 50, b.y - boruAralik / 2);
+    ctx.drawImage(pipeBottom, b.x, b.y + boruAralik / 2, 50, canvas.height);
+
+    // Çarpma
+    if (
+      kus.x < b.x + 50 &&
+      kus.x + kus.w > b.x &&
+      (kus.y < b.y - boruAralik / 2 || kus.y + kus.h > b.y + boruAralik / 2)
+    ) {
+      alert("Oyun Bitti! Puan: " + puan);
+      document.location.reload();
+    }
+
+    // Puan
+    if (b.x + 50 === kus.x) puan++;
+  }
+
+  // Yere çarpma
+  if (kus.y + kus.h > canvas.height || kus.y < 0) {
+    alert("Oyun Bitti! Puan: " + puan);
+    document.location.reload();
+  }
+
+  // Puan yaz
+  ctx.fillStyle = "black";
+  ctx.font = "30px Arial";
+  ctx.fillText(puan, 180, 50);
+
+  requestAnimationFrame(oyun);
+}
+
+oyun();
+</script>
+</body>
+</html>
